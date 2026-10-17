@@ -3,6 +3,7 @@ import { createAI } from './ai.js';
 
 const AI_DELAY_MS = 600;
 const COLS = 'ABCDEFGHIJ';
+const OPPONENT = { hard: 'The Outlaw', easy: 'The Greenhorn' };
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -41,8 +42,12 @@ function newGame() {
   els.placementControls.hidden = false;
   els.restart.hidden = true;
   els.banner.hidden = true;
-  setStatus(`Place your ${FLEET[0].name} (${FLEET[0].length}). Press R or Rotate to turn it.`);
+  setStatus(`Place your ${FLEET[0].name} (${FLEET[0].length}). Press R or Turn to turn it.`);
   render();
+}
+
+function opponent() {
+  return OPPONENT[els.difficulty.value];
 }
 
 function coord(r, c) {
@@ -53,10 +58,11 @@ function setStatus(text) {
   els.status.textContent = text;
 }
 
-function log(text, kind) {
+function log(text, kind, by) {
   const li = document.createElement('li');
   li.textContent = text;
   if (kind) li.className = kind;
+  if (by) li.dataset.by = by;
   els.log.prepend(li);
 }
 
@@ -109,7 +115,8 @@ function segmentClasses(ship, r, c) {
   const i = ship.cells.findIndex(([sr, sc]) => sr === r && sc === c);
   const vertical = ship.cells[0][1] === ship.cells[1][1];
   const part = i === 0 ? 'bow' : i === ship.length - 1 ? 'stern' : 'mid';
-  return vertical ? [part, 'v'] : [part];
+  const kind = `k-${ship.name.toLowerCase().replace(/\s+/g, '-')}`;
+  return vertical ? [part, kind, 'v'] : [part, kind];
 }
 
 function paintBoard(container, board, { revealShips }) {
@@ -140,7 +147,7 @@ function paintPreview() {
     if (pr >= SIZE || pc >= SIZE) return;
     const btn = els.playerBoard.children[pr * SIZE + pc];
     const part = i === 0 ? 'bow' : i === cells.length - 1 ? 'stern' : 'mid';
-    btn.classList.add('preview', part);
+    btn.classList.add('preview', part, `k-${spec.name.toLowerCase().replace(/\s+/g, '-')}`);
     if (!state.horizontal) btn.classList.add('v');
     if (!valid) btn.classList.add('invalid');
   });
@@ -196,11 +203,11 @@ function onPlayerBoardClick(r, c) {
   const spec = nextShipSpec();
   if (!spec) return;
   if (!placeShip(state.player, spec, r, c, state.horizontal)) {
-    setStatus(`${spec.name} doesn't fit there.`);
+    setStatus(`Your ${spec.name} won't fit there, partner.`);
     return;
   }
   const next = nextShipSpec();
-  setStatus(next ? `Place your ${next.name} (${next.length}).` : 'Fleet ready. Press Start game.');
+  setStatus(next ? `Place your ${next.name} (${next.length}).` : 'Outfit\'s ready. Hit Draw! to start the showdown.');
   render();
 }
 
@@ -213,14 +220,14 @@ function onEnemyBoardClick(r, c) {
   if (state.phase !== 'playing' || state.turn !== 'player') return;
   const outcome = receiveShot(state.enemy, r, c);
   if (outcome.result === 'repeat') {
-    setStatus(`You already fired at ${coord(r, c)}. Pick another square.`);
+    setStatus(`You already shot at ${coord(r, c)}. Pick fresh ground.`);
     return;
   }
   state.lastShot.player = [r, c];
   describeShot('You', r, c, outcome);
   if (allSunk(state.enemy)) return endGame('player');
   state.turn = 'ai';
-  setStatus('Enemy is aiming...');
+  setStatus(`${opponent()} is takin' aim...`);
   render();
   setTimeout(aiTurn, AI_DELAY_MS);
 }
@@ -234,26 +241,29 @@ function aiTurn() {
   if (outcome.result !== 'miss') flash(els.playerPanel, 'shake');
   if (allSunk(state.player)) return endGame('ai');
   state.turn = 'player';
-  setStatus('Your turn. Fire on the enemy board.');
+  setStatus('Your shot. Fire on the rival ranch.');
   render();
 }
 
 function describeShot(who, r, c, outcome) {
   const where = coord(r, c);
-  const side = who === 'You' ? 'mine' : 'theirs';
-  if (outcome.result === 'miss') log(`${who} fired at ${where}: miss.`, `miss ${side}`);
-  if (outcome.result === 'hit') log(`${who} fired at ${where}: hit!`, `hit ${side}`);
+  const mine = who === 'You';
+  const name = mine ? 'You' : opponent();
+  const side = mine ? 'mine' : 'theirs';
+  const by = mine ? 'player' : 'ai';
+  if (outcome.result === 'miss') log(`${name} fired at ${where}. Nothin' but dust.`, `miss ${side}`, by);
+  if (outcome.result === 'hit') log(`${name} fired at ${where}. Hit!`, `hit ${side}`, by);
   if (outcome.result === 'sunk') {
-    const owner = who === 'You' ? "the enemy's" : 'your';
-    log(`${who} fired at ${where}: sunk ${owner} ${outcome.ship.name}!`, `sunk ${side}`);
+    const owner = mine ? 'their' : 'your';
+    log(`${name} fired at ${where} and took down ${owner} ${outcome.ship.name}!`, `sunk ${side}`, by);
   }
 }
 
 function endGame(winner) {
   state.phase = 'over';
-  setStatus(winner === 'player' ? 'Victory! You sank the whole enemy fleet.' : 'Defeat. The enemy sank your fleet.');
+  setStatus(winner === 'player' ? 'Yee-haw! You ran the whole rival outfit out of Texas.' : `Hogtied. ${opponent()} took down your whole outfit.`);
   els.restart.hidden = false;
-  els.banner.textContent = winner === 'player' ? 'Victory' : 'Defeat';
+  els.banner.textContent = winner === 'player' ? 'Yee-haw!' : 'Hogtied';
   els.banner.className = winner === 'player' ? 'win' : 'loss';
   els.banner.hidden = false;
   render();
@@ -274,7 +284,7 @@ document.addEventListener('keydown', (e) => {
 els.random.addEventListener('click', () => {
   if (state.phase !== 'placing') return;
   state.player = randomFleet();
-  setStatus('Fleet ready. Press Start game.');
+  setStatus('Outfit\'s ready. Hit Draw! to start the showdown.');
   render();
 });
 
@@ -290,8 +300,8 @@ els.start.addEventListener('click', () => {
   state.phase = 'playing';
   state.ai = createAI({ difficulty: els.difficulty.value });
   els.placementControls.hidden = true;
-  setStatus('Your turn. Fire on the enemy board.');
-  log(`Battle started (AI: ${els.difficulty.value}).`);
+  setStatus('Your shot. Fire on the rival ranch.');
+  log(`Showdown started against ${opponent()}.`);
   render();
 });
 

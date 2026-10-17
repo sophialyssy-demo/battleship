@@ -3,47 +3,47 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Battleship vs AI</title>
+  <title>Lone Star Showdown: Battleship vs AI</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header>
-    <h1>Battleship</h1>
-    <p class="tagline">Fleet command console</p>
+    <h1><span class="star" aria-hidden="true"></span>Lone Star Showdown<span class="star" aria-hidden="true"></span></h1>
+    <p class="tagline">Battleship, Texas style</p>
     <p id="status" role="status" aria-live="polite"></p>
   </header>
 
   <section id="controls">
     <div id="placement-controls">
-      <button id="rotate" type="button">Rotate (R)</button>
+      <button id="rotate" type="button">Turn (R)</button>
       <button id="random" type="button">Random placement</button>
-      <button id="clear" type="button">Clear</button>
+      <button id="clear" type="button">Clear ranch</button>
       <label>
-        AI difficulty
+        Opponent
         <select id="difficulty">
-          <option value="hard" selected>Hard</option>
-          <option value="easy">Easy</option>
+          <option value="hard" selected>The Outlaw (hard)</option>
+          <option value="easy">The Greenhorn (easy)</option>
         </select>
       </label>
-      <button id="start" type="button" class="primary" disabled>Start game</button>
+      <button id="start" type="button" class="primary" disabled>Draw!</button>
     </div>
-    <button id="restart" type="button" class="primary" hidden>Play again</button>
+    <button id="restart" type="button" class="primary" hidden>Saddle up again</button>
   </section>
 
   <main>
     <div id="player-panel" class="board-wrap panel">
-      <h2><span class="lamp"></span>Your fleet</h2>
+      <h2><span class="lamp"></span>Your ranch</h2>
       <div class="grid-frame">
-        <div id="player-board" class="board" aria-label="Your board"></div>
+        <div id="player-board" class="board" aria-label="Your ranch"></div>
       </div>
       <ul id="player-fleet" class="fleet"></ul>
     </div>
     <div id="enemy-panel" class="board-wrap panel">
-      <h2><span class="lamp"></span>Enemy waters</h2>
+      <h2><span class="lamp"></span>Rival ranch</h2>
       <div class="grid-frame">
-        <div id="enemy-board" class="board" aria-label="Enemy board"></div>
-        <div class="sweep" aria-hidden="true"></div>
+        <div id="enemy-board" class="board" aria-label="Rival ranch"></div>
+        <div class="tumbleweed" aria-hidden="true"></div>
         <div id="banner" hidden></div>
       </div>
       <ul id="enemy-fleet" class="fleet"></ul>
@@ -51,7 +51,7 @@
   </main>
 
   <section class="log-wrap panel">
-    <h2>Battle log</h2>
+    <h2>Sheriff&rsquo;s ledger</h2>
     <ol id="log" reversed></ol>
   </section>
 

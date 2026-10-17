@@ -79,7 +79,7 @@ test('clicking quickly during the AI turn only fires one shot', async () => {
   await enemyCell(page, 0, 2).click();
   assert.equal(await shotsOnEnemy(page), 1);
   await page.waitForTimeout(1200);
-  const enemyShots = await page.locator('#log li', { hasText: 'Enemy fired' }).count();
+  const enemyShots = await page.locator('#log li[data-by="ai"]').count();
   assert.equal(enemyShots, 1);
   await page.close();
 });
@@ -103,11 +103,11 @@ test('player can sink every enemy ship, win, and start a fresh game', async () =
     await page.waitForSelector('#enemy-board.active');
     await enemyCell(page, r, c).click();
   }
-  await page.waitForFunction(() => document.querySelector('#status').textContent.startsWith('Victory'));
+  await page.waitForFunction(() => document.querySelector('#banner.win:not([hidden])'));
   assert.equal(await page.locator('#restart').isVisible(), true);
 
   await page.waitForTimeout(800);
-  const enemyShots = await page.locator('#log li', { hasText: 'Enemy fired' }).count();
+  const enemyShots = await page.locator('#log li[data-by="ai"]').count();
   assert.equal(enemyShots, targets.length - 1, 'AI must not fire after the player wins');
 
   await page.click('#restart');

@@ -1,11 +1,11 @@
 export const SIZE = 10;
 
 export const FLEET = [
-  { name: 'Carrier', length: 5 },
-  { name: 'Battleship', length: 4 },
-  { name: 'Cruiser', length: 3 },
-  { name: 'Submarine', length: 3 },
-  { name: 'Destroyer', length: 2 },
+  { name: 'Cattle Drive', length: 5 },
+  { name: 'Freight Train', length: 4 },
+  { name: 'Stagecoach', length: 3 },
+  { name: 'Chuckwagon', length: 3 },
+  { name: 'Pony Express', length: 2 },
 ];
 
 export function createBoard() {
