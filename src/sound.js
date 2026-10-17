@@ -133,6 +133,31 @@ const SOUNDS = {
     osc.stop(t + 1.1);
     lfo.stop(t + 1.1);
   },
+  // Saddle up again: leather creak, a jingle of spurs, then hoofbeats trotting off.
+  saddle(ac, t) {
+    const creak = ac.createOscillator();
+    creak.type = 'sawtooth';
+    creak.frequency.setValueAtTime(38, t);
+    creak.frequency.linearRampToValueAtTime(62, t + 0.35);
+    creak.frequency.linearRampToValueAtTime(30, t + 0.55);
+    const f = ac.createBiquadFilter();
+    f.type = 'bandpass';
+    f.frequency.value = 900;
+    f.Q.value = 4;
+    const g = envelope(ac, t, 0.08, 0.5, 0.5);
+    creak.connect(f).connect(g).connect(master);
+    creak.start(t);
+    creak.stop(t + 0.7);
+    [0.45, 0.52, 0.6, 0.66, 0.8, 0.86].forEach((d, i) => {
+      tone(ac, t + d, { type: 'sine', from: 3800 + (i % 3) * 700, seconds: 0.18, peak: 0.08, attack: 0.002 });
+      tone(ac, t + d, { type: 'sine', from: 5600 + (i % 2) * 900, seconds: 0.12, peak: 0.04, attack: 0.002 });
+    });
+    [1.0, 1.12, 1.4, 1.52, 1.8, 1.92, 2.2, 2.32].forEach((d, i) => {
+      const v = 0.9 - i * 0.09;
+      tone(ac, t + d, { from: i % 2 ? 210 : 170, to: 70, seconds: 0.09, peak: 0.6 * v, attack: 0.002 });
+      noise(ac, t + d, { seconds: 0.05, peak: 0.25 * v, filter: 'bandpass', freq: i % 2 ? 1500 : 1100, q: 2 });
+    });
+  },
   // Win: a banjo-style plucked arpeggio.
   win(ac, t) {
     [392, 494, 587, 784, 587, 784].forEach((f, i) => {

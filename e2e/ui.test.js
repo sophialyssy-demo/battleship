@@ -110,7 +110,9 @@ test('player can sink every enemy ship, win, and start a fresh game', async () =
   const enemyShots = await page.locator('#log li[data-by="ai"]').count();
   assert.equal(enemyShots, targets.length - 1, 'AI must not fire after the player wins');
 
+  await page.evaluate(() => { window.__soundLog = []; });
   await page.click('#restart');
+  assert.deepEqual(await page.evaluate(() => window.__soundLog), ['saddle']);
   assert.equal(await shotsOnEnemy(page), 0);
   assert.equal(await page.locator('#log li').count(), 0);
   assert.equal(await page.locator('#start').isVisible(), true);

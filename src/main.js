@@ -303,12 +303,23 @@ function playShot(outcome, distant) {
   play(outcome.result);
 }
 
+function plateLine(cls, text) {
+  const span = document.createElement('span');
+  span.className = cls;
+  span.textContent = text;
+  return span;
+}
+
 function endGame(winner) {
   setTimeout(() => play(winner === 'player' ? 'win' : 'lose'), 700);
   state.phase = 'over';
   setStatus(winner === 'player' ? 'Yee-haw! You ran the whole rival outfit out of Texas.' : `Hogtied. ${opponent()} took down your whole outfit.`);
   els.restart.hidden = false;
-  els.banner.textContent = winner === 'player' ? 'Yee-haw!' : 'Hogtied';
+  els.banner.replaceChildren(
+    plateLine('plate-top', 'Texas \u2605 1936'),
+    plateLine('plate-main', winner === 'player' ? 'Yee-haw!' : 'Hogtied'),
+    plateLine('plate-bottom', winner === 'player' ? 'Rival ranch cleared' : 'Your outfit is down'),
+  );
   els.banner.className = winner === 'player' ? 'win' : 'loss';
   els.banner.hidden = false;
   render();
@@ -366,7 +377,10 @@ els.start.addEventListener('click', () => {
   render();
 });
 
-els.restart.addEventListener('click', newGame);
+els.restart.addEventListener('click', () => {
+  play('saddle');
+  newGame();
+});
 
 buildGrid(els.playerBoard, onPlayerBoardClick, onPlayerBoardHover);
 buildGrid(els.enemyBoard, onEnemyBoardClick);

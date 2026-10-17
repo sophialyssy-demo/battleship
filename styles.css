@@ -363,25 +363,58 @@ h2 {
 }
 .scanning .tumbleweed { opacity: 1; }
 
+/* End-of-game banner: an old-timey embossed Texas license plate. */
+.grid-frame:has(#banner:not([hidden])) .board { filter: brightness(0.5) saturate(0.6); transition: filter 0.4s; }
 #banner {
+  --plate: #16130f;
+  --emboss: #f1ead8;
   grid-area: 2 / 2;
   align-self: center;
   justify-self: center;
+  z-index: 6;
   pointer-events: none;
-  padding: 0.25em 0.6em;
-  font-family: var(--display);
-  font-size: calc(var(--cell) * 1.3);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border: 5px double currentColor;
-  border-radius: 8px;
-  background: #f4e6c8bb;
-  mix-blend-mode: multiply;
-  transform: rotate(-10deg);
-  animation: stamp 0.45s cubic-bezier(.2, 1.6, .5, 1);
+  display: grid;
+  justify-items: center;
+  width: calc(var(--cell) * 8.6);
+  padding: calc(var(--cell) * 0.32) calc(var(--cell) * 0.4) calc(var(--cell) * 0.28);
+  color: var(--emboss);
+  background:
+    radial-gradient(circle at 9% 18%, #000 0 4px, #8f8a80 5px 6px, transparent 7px),
+    radial-gradient(circle at 91% 18%, #000 0 4px, #8f8a80 5px 6px, transparent 7px),
+    radial-gradient(circle at 9% 82%, #000 0 4px, #8f8a80 5px 6px, transparent 7px),
+    radial-gradient(circle at 91% 82%, #000 0 4px, #8f8a80 5px 6px, transparent 7px),
+    radial-gradient(ellipse at 30% 20%, #ffffff1f, transparent 60%),
+    radial-gradient(circle at 80% 75%, #7a3b1266 0 6%, transparent 14%),
+    radial-gradient(circle at 15% 60%, #7a3b1244 0 4%, transparent 10%),
+    var(--plate);
+  border-radius: 10px;
+  box-shadow:
+    inset 0 0 0 3px var(--plate),
+    inset 0 0 0 5px var(--emboss),
+    inset 0 2px 0 6px #ffffff22,
+    0 0 0 2px #000,
+    0 10px 24px #000c;
+  transform: rotate(-4deg);
+  animation: plate-drop 0.55s cubic-bezier(.2, 1.5, .5, 1);
+  text-shadow: -1px -1px 0 #ffffff66, 2px 2px 0 #000, 3px 3px 2px #0008;
 }
-#banner.win { color: var(--red); }
-#banner.loss { color: var(--blue); }
+#banner .plate-top, #banner .plate-bottom {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: calc(var(--cell) * 0.36);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+#banner .plate-main {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: calc(var(--cell) * 1.25);
+  line-height: 1.05;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+#banner.win { --plate: #e9b52a; --emboss: #1a1208; text-shadow: -1px -1px 0 #fff8, 2px 2px 0 #7a5a0a, 3px 3px 2px #0006; }
+#banner.loss { --plate: #16130f; --emboss: #f1ead8; }
 
 .panel.shake { animation: shake 0.35s; }
 
@@ -459,7 +492,7 @@ h2 {
   55%, 100% { transform: translateX(calc(var(--cell) * 11)) rotate(720deg); }
 }
 @keyframes hop { from { bottom: 4%; } to { bottom: 12%; } }
-@keyframes stamp { from { transform: scale(2.4) rotate(-10deg); opacity: 0; } to { transform: scale(1) rotate(-10deg); opacity: 1; } }
+@keyframes plate-drop { from { transform: translateY(-60%) rotate(-14deg); opacity: 0; } to { transform: rotate(-4deg); opacity: 1; } }
 @keyframes shake {
   0%, 100% { transform: rotate(var(--tilt)); }
   25% { transform: rotate(var(--tilt)) translateX(-5px); }
