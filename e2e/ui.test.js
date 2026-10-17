@@ -157,26 +157,32 @@ test('the rival ranch is colored and labeled by opponent', async () => {
   await page.close();
 });
 
-test('quitting mid-battle asks first, then starts a fresh game, even during the AI turn', async () => {
+test('quitting mid-battle takes two clicks, then starts a fresh game, even during the AI turn', async () => {
   const { page, errors } = await openGame();
+  const dialogs = [];
+  page.on('dialog', (d) => { dialogs.push(d.message()); d.dismiss(); });
   const shotsOnPlayer = () =>
     page.evaluate(() => document.querySelectorAll('#player-board .cell.miss, #player-board .cell.hit, #player-board .cell.sunk').length);
+  const armed = () => page.evaluate(() => 'armed' in document.querySelector('#quit').dataset);
   assert.match(await page.textContent('#status'), /Howdy/);
   assert.equal(await page.locator('#quit').isVisible(), false);
   await startWithRandomFleet(page);
 
-  page.once('dialog', (d) => d.dismiss());
   await page.click('#quit');
+  assert.equal(await armed(), true);
   assert.equal(await page.locator('#random').isVisible(), false);
 
   await enemyCell(page, 0, 0).click();
-  page.once('dialog', (d) => d.accept());
+  assert.equal(await armed(), false);
+
+  await page.click('#quit');
   await page.click('#quit');
   await page.waitForTimeout(1000);
   assert.equal(await page.locator('#random').isVisible(), true);
   assert.equal(await page.locator('#quit').isVisible(), false);
   assert.equal(await shotsOnPlayer(), 0);
   assert.equal(await page.locator('#log li').count(), 0);
+  assert.deepEqual(dialogs, []);
   assert.deepEqual(errors, []);
   await page.close();
 });

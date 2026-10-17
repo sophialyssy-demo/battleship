@@ -30,6 +30,7 @@ const els = {
 };
 
 let state;
+let quitTimer;
 
 function newGame() {
   state = {
@@ -42,6 +43,7 @@ function newGame() {
     hover: null,
     lastShot: { player: null, enemy: null },
   };
+  disarmQuit();
   els.log.innerHTML = '';
   els.placementControls.hidden = false;
   els.restart.hidden = true;
@@ -262,6 +264,7 @@ function onPlayerBoardHover(r, c) {
 
 function onEnemyBoardClick(r, c) {
   if (state.phase !== 'playing' || state.turn !== 'player') return;
+  disarmQuit();
   const outcome = receiveShot(state.enemy, r, c);
   if (outcome.result === 'repeat') {
     setStatus(`You already shot at ${coord(r, c)}. Pick fresh ground.`);
@@ -394,9 +397,22 @@ els.start.addEventListener('click', () => {
   render();
 });
 
+// Quitting takes two clicks. The first arms the button for a few seconds.
+// (A native confirm() is silently ignored when the game runs in a sandboxed iframe.)
+function disarmQuit() {
+  clearTimeout(quitTimer);
+  delete els.quit.dataset.armed;
+  els.quit.textContent = 'Hightail it (quit)';
+}
+
 els.quit.addEventListener('click', () => {
   if (state.phase !== 'playing') return;
-  if (!confirm('Quit this showdown and start over?')) return;
+  if (!els.quit.dataset.armed) {
+    els.quit.dataset.armed = 'true';
+    els.quit.textContent = 'Sure? Click to quit';
+    quitTimer = setTimeout(disarmQuit, 4000);
+    return;
+  }
   play('giddyup');
   newGame();
 });

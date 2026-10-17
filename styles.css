@@ -49,6 +49,10 @@ header .corner {
   align-items: stretch;
   gap: 0.35rem;
 }
+header .corner button[data-armed] {
+  background: linear-gradient(180deg, #c8102e, #8a0b20);
+  color: #fff6e0;
+}
 header .corner button {
   padding: 0.3rem 0.6rem;
   font-size: 0.8rem;
