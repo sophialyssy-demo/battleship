@@ -10,6 +10,7 @@
 <body>
   <header>
     <h1>Battleship</h1>
+    <p class="tagline">Fleet command console</p>
     <p id="status" role="status" aria-live="polite"></p>
   </header>
 
@@ -31,19 +32,25 @@
   </section>
 
   <main>
-    <div class="board-wrap">
-      <h2>Your fleet</h2>
-      <div id="player-board" class="board" aria-label="Your board"></div>
+    <div id="player-panel" class="board-wrap panel">
+      <h2><span class="lamp"></span>Your fleet</h2>
+      <div class="grid-frame">
+        <div id="player-board" class="board" aria-label="Your board"></div>
+      </div>
       <ul id="player-fleet" class="fleet"></ul>
     </div>
-    <div class="board-wrap">
-      <h2>Enemy waters</h2>
-      <div id="enemy-board" class="board" aria-label="Enemy board"></div>
+    <div id="enemy-panel" class="board-wrap panel">
+      <h2><span class="lamp"></span>Enemy waters</h2>
+      <div class="grid-frame">
+        <div id="enemy-board" class="board" aria-label="Enemy board"></div>
+        <div class="sweep" aria-hidden="true"></div>
+        <div id="banner" hidden></div>
+      </div>
       <ul id="enemy-fleet" class="fleet"></ul>
     </div>
   </main>
 
-  <section>
+  <section class="log-wrap panel">
     <h2>Battle log</h2>
     <ol id="log" reversed></ol>
   </section>
