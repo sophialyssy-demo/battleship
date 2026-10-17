@@ -471,6 +471,7 @@ h2 {
 .fleet li.next { color: var(--red); }
 
 .log-wrap { max-width: 36rem; margin: 1.75rem auto 0; --tilt: -0.3deg; }
+.log-wrap::before { display: none; }
 #log {
   margin: 0;
   padding: 0 0.5rem 0 2.6rem;
