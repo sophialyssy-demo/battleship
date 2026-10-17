@@ -39,7 +39,15 @@ body {
   background-color: #0f1c3f;
 }
 
-header { color: var(--cream); }
+header { position: relative; color: var(--cream); }
+button.mute {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.2rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+}
+button.mute[aria-pressed="true"] { opacity: 0.75; }
 h1 {
   margin: 0.4rem 0 0;
   font-family: var(--display);
@@ -423,6 +431,7 @@ h2 {
   body { padding: 0.4rem 0.4rem 4rem; background-size: 100% 70px, auto, auto; }
   h1 { font-size: 1.35rem; gap: 0.35rem; }
   .tagline { display: none; }
+  button.mute { position: static; margin-top: 0.3rem; padding: 0.2rem 0.5rem; font-size: 0.7rem; }
   #status { margin-top: 0.3rem; font-size: 0.85rem; padding: 0.25rem 1.2rem; }
   #controls { margin: 0.4rem 0; }
   main { gap: 0.5rem; }

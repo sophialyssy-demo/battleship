@@ -11,7 +11,7 @@ A Texas-themed browser Battleship game where you play against a computer opponen
 4. The first side to take down the whole rival outfit wins.
 
 ## Design
-A Texas sunset over mesas and saguaros, wanted-poster boards pinned to the wall, a wooden sign for the status line and a sheriff's ledger for the battle log. Each outfit has its own look and icon (cowhide and longhorn, locomotive, stagecoach wheel, chuckwagon canvas, horseshoe), all drawn with CSS and inline SVG. Animations: a muzzle flash for a hit, a dust puff for a miss, a sizzling brand for a sink, a tumbleweed that rolls across the rival ranch, and a YEE-HAW!/HOGTIED stamp at the end. Animations turn off when the OS has *reduce motion* enabled. Fonts (Rye and Zilla Slab, SIL Open Font License) are self-hosted in `fonts/`, so the game makes no third-party requests.
+A Texas sunset over mesas and saguaros, wanted-poster boards pinned to the wall, a wooden sign for the status line and a sheriff's ledger for the battle log. Each outfit has its own look and icon (cowhide and longhorn, locomotive, stagecoach wheel, chuckwagon canvas, horseshoe), all drawn with CSS and inline SVG. Animations: a muzzle flash for a hit, a dust puff for a miss, a sizzling brand for a sink, a tumbleweed that rolls across the rival ranch, and a YEE-HAW!/HOGTIED stamp at the end. Animations turn off when the OS has *reduce motion* enabled. Sound effects (gunshot, ricochet, a hit thud, a branding-iron sizzle, a horse whinny on Draw!, a banjo riff for a win and a sad trombone for a loss) are synthesized with the Web Audio API, so there are no audio files. **Sound: on/off** (or **M**) mutes them, and the choice is remembered. Fonts (Rye and Zilla Slab, SIL Open Font License) are self-hosted in `fonts/`, so the game makes no third-party requests.
 
 ## AI difficulty
 - **The Greenhorn (easy)**: fires at random squares it hasn't tried yet.
@@ -39,6 +39,7 @@ See **[BUGS.md](BUGS.md)**.
 | `src/game.js` | Board rules: placement, shots, sinking, win check. No DOM code, so it can be unit tested. |
 | `src/ai.js` | Computer opponent (easy and hard). |
 | `src/main.js` | Browser UI: rendering, input, turn flow. |
+| `src/sound.js` | Synthesized Western sound effects and the mute setting. |
 | `tests/` | Unit and simulation tests (`node:test`). |
 | `e2e/` | Browser end-to-end tests (Playwright). |
 | `styles.css`, `fonts/` | Texas theme, outfit silhouettes, animations; self-hosted fonts. |

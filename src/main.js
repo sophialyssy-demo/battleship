@@ -1,5 +1,6 @@
 import { SIZE, FLEET, createBoard, canPlace, placeShip, randomFleet, receiveShot, allSunk, shipCells } from './game.js';
 import { createAI } from './ai.js';
+import { play, isMuted, setMuted } from './sound.js';
 
 const AI_DELAY_MS = 600;
 const COLS = 'ABCDEFGHIJ';
@@ -23,6 +24,7 @@ const els = {
   playerPanel: $('player-panel'),
   enemyPanel: $('enemy-panel'),
   banner: $('banner'),
+  mute: $('mute'),
 };
 
 let state;
@@ -203,9 +205,11 @@ function onPlayerBoardClick(r, c) {
   const spec = nextShipSpec();
   if (!spec) return;
   if (!placeShip(state.player, spec, r, c, state.horizontal)) {
+    play('invalid');
     setStatus(`Your ${spec.name} won't fit there, partner.`);
     return;
   }
+  play('place');
   const next = nextShipSpec();
   setStatus(next ? `Place your ${next.name} (${next.length}).` : 'Outfit\'s ready. Hit Draw! to start the showdown.');
   render();
@@ -224,6 +228,7 @@ function onEnemyBoardClick(r, c) {
     return;
   }
   state.lastShot.player = [r, c];
+  playShot(outcome, false);
   describeShot('You', r, c, outcome);
   if (allSunk(state.enemy)) return endGame('player');
   state.turn = 'ai';
@@ -237,6 +242,7 @@ function aiTurn() {
   const outcome = receiveShot(state.player, r, c);
   state.ai.report([r, c], outcome);
   state.lastShot.enemy = [r, c];
+  playShot(outcome, true);
   describeShot('Enemy', r, c, outcome);
   if (outcome.result !== 'miss') flash(els.playerPanel, 'shake');
   if (allSunk(state.player)) return endGame('ai');
@@ -259,7 +265,13 @@ function describeShot(who, r, c, outcome) {
   }
 }
 
+function playShot(outcome, distant) {
+  play('shot', { distant });
+  play(outcome.result);
+}
+
 function endGame(winner) {
+  setTimeout(() => play(winner === 'player' ? 'win' : 'lose'), 700);
   state.phase = 'over';
   setStatus(winner === 'player' ? 'Yee-haw! You ran the whole rival outfit out of Texas.' : `Hogtied. ${opponent()} took down your whole outfit.`);
   els.restart.hidden = false;
@@ -269,12 +281,27 @@ function endGame(winner) {
   render();
 }
 
+function renderMute() {
+  const muted = isMuted();
+  els.mute.setAttribute('aria-pressed', String(muted));
+  els.mute.textContent = muted ? 'Sound: off (M)' : 'Sound: on (M)';
+}
+
+function toggleMute() {
+  setMuted(!isMuted());
+  renderMute();
+}
+
+els.mute.addEventListener('click', toggleMute);
+renderMute();
+
 els.rotate.addEventListener('click', () => {
   state.horizontal = !state.horizontal;
   render();
 });
 
 document.addEventListener('keydown', (e) => {
+  if (e.key === 'm' || e.key === 'M') toggleMute();
   if (e.key === 'r' || e.key === 'R') {
     state.horizontal = !state.horizontal;
     render();
@@ -299,6 +326,7 @@ els.start.addEventListener('click', () => {
   if (state.phase !== 'placing' || state.player.ships.length !== FLEET.length) return;
   state.phase = 'playing';
   state.ai = createAI({ difficulty: els.difficulty.value });
+  play('start');
   els.placementControls.hidden = true;
   setStatus('Your shot. Fire on the rival ranch.');
   log(`Showdown started against ${opponent()}.`);

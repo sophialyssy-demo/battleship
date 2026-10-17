@@ -117,6 +117,29 @@ test('player can sink every enemy ship, win, and start a fresh game', async () =
   await page.close();
 });
 
+test('shots play sounds, and the mute toggle silences them and is remembered', async () => {
+  const { page, errors } = await openGame();
+  await page.evaluate(() => { window.__soundLog = []; });
+  await startWithRandomFleet(page);
+  await enemyCell(page, 0, 0).click();
+  await page.waitForSelector('#enemy-board.active');
+  const sounds = await page.evaluate(() => window.__soundLog);
+  assert.deepEqual(sounds.slice(0, 2), ['start', 'shot']);
+  assert.ok(sounds.length >= 5, `expected player and AI shot sounds, got ${sounds}`);
+
+  await page.click('#mute');
+  assert.equal(await page.getAttribute('#mute', 'aria-pressed'), 'true');
+  await page.evaluate(() => { window.__soundLog = []; });
+  await enemyCell(page, 0, 1).click();
+  await page.waitForSelector('#enemy-board.active');
+  assert.deepEqual(await page.evaluate(() => window.__soundLog), []);
+
+  await page.reload();
+  assert.equal(await page.getAttribute('#mute', 'aria-pressed'), 'true');
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
 test('on a phone-sized screen both boards fit without scrolling during battle', async () => {
   const context = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
   const page = await context.newPage();
