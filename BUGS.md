@@ -22,9 +22,9 @@ For each bug below, I wrote a test that failed on the buggy code and passes afte
 | 8 | **The quit button did nothing.** Clicking *Hightail it (quit)* in the in-app preview browser didn't ask anything or quit. | Manual playtest in the in-app preview browser. The E2E test missed it because the test answered the dialog itself. | The button asked with the browser's built-in `confirm()`. Inside a sandboxed iframe without `allow-modals`, Chrome ignores that call and returns `false`, which the code read as "No". I reproduced it in a test page: Chrome logs *Ignored call to 'confirm()'. The document is sandboxed*. | Replaced the pop-up with a two-click confirm: the first click turns the button red ("Sure? Click to quit") for 4 seconds; a second click quits. The test now fails if any browser dialog opens. [`d52f74a`](https://github.com/sophialyssy-demo/battleship/commit/d52f74a) |
 
 ## Results after the fixes
-- 10 unit and simulation tests and 9 browser tests pass. CI runs them on every push and blocks the deploy if any fail.
+- 11 unit and simulation tests and 11 browser tests pass. CI runs them on every push and blocks the deploy if any fail.
 - Over 2,000 simulated games, the **Hard** AI (checkerboard search, then working along a ship after a hit) needs about **51 shots** on average to win. The **Easy** AI (random shots) needs about **95**.
 
 ## Known limitations and next steps
 - When the AI sinks a ship, it is told which squares that ship covered. Real Battleship only announces which ship was sunk. This is a common shortcut. A stricter version would work out the ship's position from the ship's length.
-- Possible next features: drag-and-drop ship placement and two-player online play.
+- Possible next feature: two-player online play.

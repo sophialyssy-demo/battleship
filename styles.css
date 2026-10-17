@@ -469,6 +469,28 @@ h2 {
 .pips i.hit { background: radial-gradient(circle, #120805 0 40%, var(--red) 45%); }
 .fleet li.sunk { text-decoration: line-through var(--red) 2px; opacity: 0.55; }
 .fleet li.next { color: var(--red); }
+.fleet li.draggable {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  padding: 0 0.35rem;
+  border: 1px dashed var(--ink-soft);
+  border-radius: 4px;
+  background: #fff4;
+}
+.fleet li.dragging { opacity: 0.35; }
+#player-panel.placing #player-fleet::before {
+  content: 'Corral: drag an outfit onto your ranch';
+  flex-basis: 100%;
+  font-size: 0.75rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+#player-panel.placing .board { touch-action: none; user-select: none; -webkit-user-select: none; }
+#player-panel.placing .cell.ship { cursor: grab; }
+body.dragging, body.dragging * { cursor: grabbing !important; }
 
 .log-wrap { max-width: 36rem; margin: 1.75rem auto 0; --tilt: -0.3deg; }
 .log-wrap::before { display: none; }
@@ -558,6 +580,7 @@ h2 {
   .panel { padding: 0.35rem 0.5rem 0.3rem; --tilt: 0deg !important; }
   #player-panel, #enemy-panel { --tilt: 0deg; }
   .panel::before { display: none; }
+  #player-panel.placing #player-fleet::before { display: none; }
   h2 { margin: 0.15rem 0 0.15rem; font-size: 0.85rem; }
   .lamp { width: 12px; height: 12px; }
   .labels { font-size: 0.6rem; }

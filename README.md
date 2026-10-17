@@ -5,7 +5,7 @@
 A Texas-themed browser Battleship game where you play against a computer opponent. It's plain HTML, CSS and JavaScript, with no build step and no backend.
 
 ## How to play
-1. Place your five outfits: Cattle Drive (5), Freight Train (4), Stagecoach (3), Chuckwagon (3) and Pony Express (2). These are the standard Battleship ships under new names. Click a square on **Your ranch** to place the highlighted one, and press **R** (or the **Turn** button) to switch between horizontal and vertical. You can also use **Random placement**.
+1. Place your five outfits: Cattle Drive (5), Freight Train (4), Stagecoach (3), Chuckwagon (3) and Pony Express (2). These are the standard Battleship ships under new names. Drag an outfit from the corral under **Your ranch** onto the board, in any order, or click a square to place the highlighted one. Press **R** (or the **Turn** button) to switch between horizontal and vertical, including mid-drag. Drag a placed outfit to move it, or click it to turn it. Anything dropped where it won't fit snaps back. Dragging works with a mouse or a finger. You can also use **Random placement**.
 2. Choose your opponent, **The Outlaw** (hard) or **The Greenhorn** (easy), and press **Draw!**
 3. Click squares on **Rival ranch** to fire. A bullet hole is a hit, a scuff of dust is a miss, and a lone-star brand marks every square of a sunk outfit. A gold outline marks the most recent shot on each board, and the poster that's lit up is the one being fired on.
 4. The first side to take down the whole rival outfit wins.

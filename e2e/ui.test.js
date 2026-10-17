@@ -45,8 +45,8 @@ const SEED_SCRIPT = `
   Math.random = window.__seeded(42);
 `;
 
-async function openGame() {
-  const page = await browser.newPage();
+async function openGame(options) {
+  const page = await browser.newPage(options);
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
@@ -203,6 +203,74 @@ test('the sound and quit buttons never cover the title or status sign', async ()
     assert.deepEqual(overlaps, { title: false, status: false }, `at ${width}px wide`);
     await page.close();
   }
+});
+
+const playerCell = (page, r, c) => page.locator('#player-board .cell').nth(r * 10 + c);
+const corral = (page, name) => page.locator(`#player-fleet li[data-ship="${name}"]`);
+const cellsOf = (page, kind) =>
+  page.evaluate((k) => [...document.querySelectorAll('#player-board .cell')].flatMap((b, i) => (b.classList.contains(`k-${k}`) ? [i] : [])), kind);
+
+async function center(locator) {
+  const b = await locator.boundingBox();
+  return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+}
+
+async function mouseDrag(page, from, to) {
+  const a = await center(from);
+  const b = await center(to);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  await page.mouse.move(b.x, b.y, { steps: 8 });
+  await page.mouse.up();
+}
+
+test('outfits can be dragged from the corral, moved, turned, and snap back when they do not fit', async () => {
+  const { page, errors } = await openGame({ viewport: { width: 1280, height: 1000 } });
+  await mouseDrag(page, corral(page, 'Pony Express'), playerCell(page, 0, 0));
+  assert.deepEqual(await cellsOf(page, 'pony-express'), [0, 1]);
+  assert.match(await page.textContent('#player-fleet li.next'), /Cattle Drive/);
+
+  await playerCell(page, 2, 2).click();
+  assert.deepEqual(await cellsOf(page, 'cattle-drive'), [22, 23, 24, 25, 26]);
+
+  await mouseDrag(page, playerCell(page, 0, 1), playerCell(page, 5, 6));
+  assert.deepEqual(await cellsOf(page, 'pony-express'), [55, 56]);
+
+  await mouseDrag(page, playerCell(page, 5, 5), playerCell(page, 2, 4));
+  assert.deepEqual(await cellsOf(page, 'pony-express'), [55, 56]);
+  assert.match(await page.textContent('#status'), /won't fit/);
+
+  await playerCell(page, 5, 5).click();
+  assert.deepEqual(await cellsOf(page, 'pony-express'), [55, 65]);
+  assert.deepEqual(await cellsOf(page, 'cattle-drive'), [22, 23, 24, 25, 26]);
+
+  await page.mouse.move(5, 5);
+  for (const [name, r] of [['Freight Train', 7], ['Stagecoach', 8], ['Chuckwagon', 9]]) {
+    await mouseDrag(page, corral(page, name), playerCell(page, r, 0));
+  }
+  assert.equal(await page.locator('#player-fleet li.draggable').count(), 0);
+  assert.equal(await page.isDisabled('#start'), false);
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
+test('on a touch screen an outfit can be dragged onto the ranch without scrolling the page', async () => {
+  const context = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(baseUrl);
+  const cdp = await context.newCDPSession(page);
+  const touch = (type, p) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: p ? [{ x: p.x, y: p.y }] : [] });
+  const a = await center(corral(page, 'Cattle Drive'));
+  const b = await center(playerCell(page, 3, 0));
+  await touch('touchStart', a);
+  for (let i = 1; i <= 8; i++) await touch('touchMove', { x: a.x + ((b.x - a.x) * i) / 8, y: a.y + ((b.y - a.y) * i) / 8 });
+  await touch('touchEnd');
+  assert.deepEqual(await cellsOf(page, 'cattle-drive'), [30, 31, 32, 33, 34]);
+  assert.equal(await page.evaluate(() => window.scrollY), 0);
+  assert.deepEqual(errors, []);
+  await context.close();
 });
 
 test('on a phone-sized screen both boards and fleet lists fit without scrolling during battle', async () => {

@@ -45,6 +45,19 @@ export function placeShip(board, spec, row, col, horizontal) {
   return true;
 }
 
+export function isHorizontal(ship) {
+  return ship.cells.length < 2 || ship.cells[0][0] === ship.cells[1][0];
+}
+
+// A copy of a setup-phase board without the named ship; the others stay where they were.
+export function withoutShip(board, name) {
+  const next = createBoard();
+  for (const ship of board.ships) {
+    if (ship.name !== name) placeShip(next, ship, ship.cells[0][0], ship.cells[0][1], isHorizontal(ship));
+  }
+  return next;
+}
+
 export function randomFleet(rng = Math.random) {
   const board = createBoard();
   for (const spec of FLEET) {

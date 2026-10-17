@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SIZE, FLEET, createBoard, canPlace, placeShip, randomFleet, receiveShot, allSunk } from '../src/game.js';
+import { SIZE, FLEET, createBoard, canPlace, placeShip, randomFleet, receiveShot, allSunk, withoutShip } from '../src/game.js';
 
 function seeded(seed) {
   let s = seed >>> 0;
@@ -34,6 +34,19 @@ test('random fleets are always legal', () => {
     for (const ship of b.ships) {
       for (const [r, c] of ship.cells) assert.ok(r >= 0 && r < SIZE && c >= 0 && c < SIZE);
     }
+  }
+});
+
+test('withoutShip removes one ship and leaves the rest where they were', () => {
+  const board = randomFleet(seeded(7));
+  const next = withoutShip(board, 'Stagecoach');
+  assert.equal(next.ships.length, FLEET.length - 1);
+  assert.ok(!next.ships.some((s) => s.name === 'Stagecoach'));
+  for (const ship of next.ships) {
+    assert.deepEqual(ship.cells, board.ships.find((s) => s.name === ship.name).cells);
+  }
+  for (const [r, c] of board.ships.find((s) => s.name === 'Stagecoach').cells) {
+    assert.equal(next.cells[r][c].shipIndex, null);
   }
 });
 

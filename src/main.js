@@ -1,8 +1,9 @@
-import { SIZE, FLEET, createBoard, canPlace, placeShip, randomFleet, receiveShot, allSunk, shipCells } from './game.js';
+import { SIZE, FLEET, createBoard, canPlace, placeShip, randomFleet, receiveShot, allSunk, shipCells, isHorizontal, withoutShip } from './game.js';
 import { createAI } from './ai.js';
 import { play, isMuted, setMuted } from './sound.js';
 
 const AI_DELAY_MS = 600;
+const DRAG_THRESHOLD_PX = 5;
 const COLS = 'ABCDEFGHIJ';
 const OPPONENT = { hard: 'The Outlaw', easy: 'The Greenhorn' };
 
@@ -31,6 +32,7 @@ const els = {
 
 let state;
 let quitTimer;
+let suppressClick = false;
 
 function newGame() {
   state = {
@@ -41,6 +43,7 @@ function newGame() {
     ai: null,
     turn: 'player',
     hover: null,
+    drag: null,
     lastShot: { player: null, enemy: null },
   };
   disarmQuit();
@@ -48,7 +51,7 @@ function newGame() {
   els.placementControls.hidden = false;
   els.restart.hidden = true;
   els.banner.hidden = true;
-  setStatus(`Howdy, partner! Place your ${FLEET[0].name} (${FLEET[0].length}). Press R or Turn to turn it.`);
+  setStatus(`Howdy, partner! Drag your ${FLEET[0].name} (${FLEET[0].length}) onto your ranch, or click a square. R turns it.`);
   render();
 }
 
@@ -130,7 +133,14 @@ function addLabels(frame) {
 }
 
 function nextShipSpec() {
-  return FLEET[state.player.ships.length] ?? null;
+  return FLEET.find((spec) => !state.player.ships.some((s) => s.name === spec.name)) ?? null;
+}
+
+function placementStatus() {
+  const next = nextShipSpec();
+  return next
+    ? `Place your ${next.name} (${next.length}): drag it from the corral or click your ranch.`
+    : 'Outfit\'s ready. Hit Draw! to start the showdown.';
 }
 
 function buildGrid(container, onClick, onHover) {
@@ -181,17 +191,22 @@ function paintBoard(container, board, { revealShips }) {
 }
 
 function paintPreview() {
-  const spec = nextShipSpec();
-  if (state.phase !== 'placing' || !spec || !state.hover) return;
-  const [r, c] = state.hover;
-  const valid = canPlace(state.player, spec.length, r, c, state.horizontal);
-  const cells = shipCells(spec.length, r, c, state.horizontal);
+  if (state.phase !== 'placing') return;
+  const drag = state.drag?.moved ? state.drag : null;
+  const spec = drag ? drag.spec : nextShipSpec();
+  const at = drag ? drag.anchor : state.hover;
+  const horizontal = drag ? drag.horizontal : state.horizontal;
+  if (!spec || !at) return;
+  if (!drag && state.player.cells[at[0]][at[1]].shipIndex !== null) return;
+  const [r, c] = at;
+  const valid = canPlace(state.player, spec.length, r, c, horizontal);
+  const cells = shipCells(spec.length, r, c, horizontal);
   cells.forEach(([pr, pc], i) => {
-    if (pr >= SIZE || pc >= SIZE) return;
+    if (pr < 0 || pc < 0 || pr >= SIZE || pc >= SIZE) return;
     const btn = els.playerBoard.children[pr * SIZE + pc];
     const part = i === 0 ? 'bow' : i === cells.length - 1 ? 'stern' : 'mid';
     btn.classList.add('preview', part, `k-${spec.name.toLowerCase().replace(/\s+/g, '-')}`);
-    if (!state.horizontal) btn.classList.add('v');
+    if (!horizontal) btn.classList.add('v');
     if (!valid) btn.classList.add('invalid');
   });
 }
@@ -202,11 +217,13 @@ function paintLastShots() {
   if (enemy) els.playerBoard.children[enemy[0] * SIZE + enemy[1]].classList.add('last');
 }
 
-function renderFleet(list, board, { highlightNext, showDamage }) {
+function renderFleet(list, board, { highlightNext, showDamage, draggable = false }) {
   list.innerHTML = '';
-  FLEET.forEach((spec, i) => {
+  const next = highlightNext ? nextShipSpec() : null;
+  FLEET.forEach((spec) => {
     const li = document.createElement('li');
-    const ship = board.ships[i];
+    const ship = board.ships.find((s) => s.name === spec.name);
+    li.dataset.ship = spec.name;
     const sunk = ship && ship.hits === ship.length;
     li.setAttribute('aria-label', `${spec.name}, ${spec.length} squares${sunk ? ', sunk' : ''}`);
     li.append(spec.name);
@@ -221,7 +238,9 @@ function renderFleet(list, board, { highlightNext, showDamage }) {
     }
     li.appendChild(pips);
     if (sunk) li.classList.add('sunk');
-    if (highlightNext && i === board.ships.length) li.classList.add('next');
+    if (spec === next) li.classList.add('next');
+    if (draggable && !ship && !state.drag?.moved) li.classList.add('draggable');
+    if (draggable && state.drag?.moved && state.drag.spec.name === spec.name) li.classList.add('dragging');
     list.appendChild(li);
   });
 }
@@ -231,11 +250,12 @@ function render() {
   paintBoard(els.enemyBoard, state.enemy, { revealShips: state.phase === 'over' });
   paintPreview();
   paintLastShots();
-  renderFleet(els.playerFleet, state.player, { highlightNext: state.phase === 'placing', showDamage: true });
+  renderFleet(els.playerFleet, state.player, { highlightNext: state.phase === 'placing', showDamage: true, draggable: state.phase === 'placing' });
   renderFleet(els.enemyFleet, state.enemy, { highlightNext: false, showDamage: false });
   els.start.disabled = state.player.ships.length !== FLEET.length;
   const playerTurn = state.phase === 'playing' && state.turn === 'player';
   els.quit.hidden = state.phase !== 'playing';
+  els.playerPanel.classList.toggle('placing', state.phase === 'placing');
   els.enemyBoard.classList.toggle('active', playerTurn);
   els.enemyPanel.classList.toggle('active', playerTurn);
   els.enemyPanel.classList.toggle('scanning', state.phase === 'playing');
@@ -243,7 +263,12 @@ function render() {
 }
 
 function onPlayerBoardClick(r, c) {
-  if (state.phase !== 'placing') return;
+  if (state.phase !== 'placing' || suppressClick) return;
+  const index = state.player.cells[r][c].shipIndex;
+  if (index !== null) {
+    turnShip(state.player.ships[index]);
+    return;
+  }
   const spec = nextShipSpec();
   if (!spec) return;
   if (!placeShip(state.player, spec, r, c, state.horizontal)) {
@@ -252,8 +277,74 @@ function onPlayerBoardClick(r, c) {
     return;
   }
   play('place');
-  const next = nextShipSpec();
-  setStatus(next ? `Place your ${next.name} (${next.length}).` : 'Outfit\'s ready. Hit Draw! to start the showdown.');
+  setStatus(placementStatus());
+  render();
+}
+
+function turnShip(ship) {
+  const board = withoutShip(state.player, ship.name);
+  if (!placeShip(board, ship, ship.cells[0][0], ship.cells[0][1], !isHorizontal(ship))) {
+    play('invalid');
+    setStatus(`No room to turn your ${ship.name} there, partner.`);
+    return;
+  }
+  state.player = board;
+  play('place');
+  setStatus(placementStatus());
+  render();
+}
+
+// Drag and drop (pointer events, so mouse and touch both work). A press that
+// doesn't move is left to the click handler: place the next outfit, or turn one.
+function startDrag(e, spec, horizontal, offset, origin) {
+  if (state.phase !== 'placing' || e.button !== 0) return;
+  if (e.target.hasPointerCapture?.(e.pointerId)) e.target.releasePointerCapture(e.pointerId);
+  state.drag = { spec, horizontal, offset, origin, x: e.clientX, y: e.clientY, moved: false, anchor: null };
+}
+
+function anchorAt(drag) {
+  const cell = document.elementFromPoint(drag.x, drag.y)?.closest('#player-board .cell');
+  if (!cell) return null;
+  const along = drag.offset;
+  return [Number(cell.dataset.r) - (drag.horizontal ? 0 : along), Number(cell.dataset.c) - (drag.horizontal ? along : 0)];
+}
+
+function onDragMove(e) {
+  const drag = state.drag;
+  if (!drag) return;
+  if (!drag.moved) {
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < DRAG_THRESHOLD_PX) return;
+    drag.moved = true;
+    if (drag.origin) state.player = withoutShip(state.player, drag.spec.name);
+    document.body.classList.add('dragging');
+  }
+  e.preventDefault();
+  drag.x = e.clientX;
+  drag.y = e.clientY;
+  drag.anchor = anchorAt(drag);
+  render();
+}
+
+function onDragEnd(e) {
+  const drag = state.drag;
+  if (!drag) return;
+  state.drag = null;
+  if (!drag.moved) return;
+  document.body.classList.remove('dragging');
+  suppressClick = true;
+  setTimeout(() => { suppressClick = false; }, 0);
+  const target = e.type === 'pointercancel' ? null : drag.anchor;
+  const placed = target && placeShip(state.player, drag.spec, target[0], target[1], drag.horizontal);
+  if (placed) {
+    play('place');
+    setStatus(placementStatus());
+  } else {
+    if (drag.origin) placeShip(state.player, drag.spec, drag.origin.r, drag.origin.c, drag.origin.horizontal);
+    if (target) {
+      play('invalid');
+      setStatus(`Your ${drag.spec.name} won't fit there, partner.`);
+    }
+  }
   render();
 }
 
@@ -359,6 +450,29 @@ function toggleMute() {
 els.mute.addEventListener('click', toggleMute);
 renderMute();
 
+els.playerBoard.addEventListener('pointerdown', (e) => {
+  const cell = e.target.closest('.cell');
+  if (!cell || state.phase !== 'placing') return;
+  const r = Number(cell.dataset.r);
+  const c = Number(cell.dataset.c);
+  const index = state.player.cells[r][c].shipIndex;
+  if (index === null) return;
+  const ship = state.player.ships[index];
+  const horizontal = isHorizontal(ship);
+  const offset = ship.cells.findIndex(([sr, sc]) => sr === r && sc === c);
+  startDrag(e, ship, horizontal, offset, { r: ship.cells[0][0], c: ship.cells[0][1], horizontal });
+});
+
+els.playerFleet.addEventListener('pointerdown', (e) => {
+  const li = e.target.closest('li.draggable');
+  if (!li) return;
+  startDrag(e, FLEET.find((spec) => spec.name === li.dataset.ship), state.horizontal, 0, null);
+});
+
+window.addEventListener('pointermove', onDragMove);
+window.addEventListener('pointerup', onDragEnd);
+window.addEventListener('pointercancel', onDragEnd);
+
 els.rotate.addEventListener('click', () => {
   state.horizontal = !state.horizontal;
   render();
@@ -367,7 +481,12 @@ els.rotate.addEventListener('click', () => {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'm' || e.key === 'M') toggleMute();
   if (e.key === 'r' || e.key === 'R') {
-    state.horizontal = !state.horizontal;
+    if (state.drag?.moved) {
+      state.drag.horizontal = !state.drag.horizontal;
+      state.drag.anchor = anchorAt(state.drag);
+    } else {
+      state.horizontal = !state.horizontal;
+    }
     render();
   }
 });
@@ -375,6 +494,7 @@ document.addEventListener('keydown', (e) => {
 els.random.addEventListener('click', () => {
   if (state.phase !== 'placing') return;
   state.player = randomFleet();
+  state.drag = null;
   setStatus('Outfit\'s ready. Hit Draw! to start the showdown.');
   render();
 });
@@ -382,7 +502,8 @@ els.random.addEventListener('click', () => {
 els.clear.addEventListener('click', () => {
   if (state.phase !== 'placing') return;
   state.player = createBoard();
-  setStatus(`Place your ${FLEET[0].name} (${FLEET[0].length}).`);
+  state.drag = null;
+  setStatus(placementStatus());
   render();
 });
 
