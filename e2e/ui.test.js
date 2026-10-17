@@ -181,14 +181,14 @@ test('quitting mid-battle asks first, then starts a fresh game, even during the 
   await page.close();
 });
 
-test('on a phone-sized screen both boards fit without scrolling during battle', async () => {
+test('on a phone-sized screen both boards and fleet lists fit without scrolling during battle', async () => {
   const context = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
   const page = await context.newPage();
   await page.goto(baseUrl);
   await startWithRandomFleet(page);
-  const bottom = await page.evaluate(() => document.querySelector('#enemy-board').getBoundingClientRect().bottom);
+  const bottom = await page.evaluate(() => document.querySelector('#enemy-fleet').getBoundingClientRect().bottom);
   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-  assert.ok(bottom <= 812, `enemy board bottom at ${bottom}px, below the 812px viewport`);
+  assert.ok(bottom <= 812, `enemy fleet list bottom at ${bottom}px, below the 812px viewport`);
   assert.ok(scrollWidth <= 375, `page is ${scrollWidth}px wide`);
   await context.close();
 });
