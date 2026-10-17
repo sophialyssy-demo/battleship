@@ -40,10 +40,14 @@ body {
 }
 
 header { position: relative; color: var(--cream); }
-button.mute {
+header .corner {
   position: absolute;
   top: 0.2rem;
   right: 0.2rem;
+  display: flex;
+  gap: 0.4rem;
+}
+header .corner button {
   padding: 0.3rem 0.6rem;
   font-size: 0.8rem;
 }
@@ -535,7 +539,8 @@ h2 {
   body { padding: 0.4rem 0.4rem 4rem; background-size: 100% 70px, auto, auto; }
   h1 { font-size: 1.35rem; gap: 0.35rem; }
   .tagline { display: none; }
-  button.mute { position: static; margin-top: 0.3rem; padding: 0.2rem 0.5rem; font-size: 0.7rem; }
+  header .corner { position: static; justify-content: center; margin-top: 0.3rem; }
+  header .corner button { padding: 0.2rem 0.5rem; font-size: 0.7rem; }
   #status { margin-top: 0.3rem; font-size: 0.85rem; padding: 0.25rem 1.2rem; }
   #controls { margin: 0.4rem 0; }
   main { gap: 0.5rem; }

@@ -157,6 +157,29 @@ test('the rival ranch is colored and labeled by opponent', async () => {
   await page.close();
 });
 
+test('quitting mid-battle asks first, then starts a fresh game, even during the AI turn', async () => {
+  const { page, errors } = await openGame();
+  const shotsOnPlayer = () =>
+    page.evaluate(() => document.querySelectorAll('#player-board .cell.miss, #player-board .cell.hit, #player-board .cell.sunk').length);
+  assert.match(await page.textContent('#status'), /Howdy/);
+  assert.equal(await page.locator('#quit').isVisible(), false);
+  await startWithRandomFleet(page);
+
+  page.once('dialog', (d) => d.dismiss());
+  await page.click('#quit');
+  assert.equal(await page.locator('#random').isVisible(), false);
+
+  page.once('dialog', (d) => d.accept());
+  await page.click('#quit');
+  await page.waitForTimeout(1000);
+  assert.equal(await page.locator('#random').isVisible(), true);
+  assert.equal(await page.locator('#quit').isVisible(), false);
+  assert.equal(await shotsOnPlayer(), 0);
+  assert.equal(await page.locator('#log li').count(), 0);
+  assert.deepEqual(errors, []);
+  await page.close();
+});
+
 test('on a phone-sized screen both boards fit without scrolling during battle', async () => {
   const context = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
   const page = await context.newPage();

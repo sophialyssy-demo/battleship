@@ -26,6 +26,7 @@ const els = {
   enemyPanel: $('enemy-panel'),
   banner: $('banner'),
   mute: $('mute'),
+  quit: $('quit'),
 };
 
 let state;
@@ -45,7 +46,7 @@ function newGame() {
   els.placementControls.hidden = false;
   els.restart.hidden = true;
   els.banner.hidden = true;
-  setStatus(`Place your ${FLEET[0].name} (${FLEET[0].length}). Press R or Turn to turn it.`);
+  setStatus(`Howdy, partner! Place your ${FLEET[0].name} (${FLEET[0].length}). Press R or Turn to turn it.`);
   render();
 }
 
@@ -224,6 +225,7 @@ function render() {
   renderFleet(els.enemyFleet, state.enemy, { highlightNext: false, showDamage: false });
   els.start.disabled = state.player.ships.length !== FLEET.length;
   const playerTurn = state.phase === 'playing' && state.turn === 'player';
+  els.quit.hidden = state.phase !== 'playing';
   els.enemyBoard.classList.toggle('active', playerTurn);
   els.enemyPanel.classList.toggle('active', playerTurn);
   els.enemyPanel.classList.toggle('scanning', state.phase === 'playing');
@@ -382,6 +384,13 @@ els.start.addEventListener('click', () => {
   setStatus('Your shot. Fire on the rival ranch.');
   log(`Showdown started against ${opponent()}.`);
   render();
+});
+
+els.quit.addEventListener('click', () => {
+  if (state.phase !== 'playing') return;
+  if (!confirm('Quit this showdown and start over?')) return;
+  play('giddyup');
+  newGame();
 });
 
 els.restart.addEventListener('click', () => {
