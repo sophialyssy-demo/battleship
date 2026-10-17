@@ -1,5 +1,7 @@
 # Bug report: what I found and how I fixed it
 
+> The game was later re-themed ("Lone Star Showdown"). The bugs below were found before that, so they use the original names: "Enemy waters" is now *Rival ranch*, "Start game" is now *Draw!*, and "Play again" is now *Saddle up again*. The rules, the AI and the fixes are unchanged.
+
 I tested the game three ways:
 
 1. **Unit and simulation tests** (`npm test`). These cover the board rules (ship edges and overlaps, hit, miss, sunk, repeat shots, win condition). They also play 300 seeded games per AI difficulty to check that the AI never fires at the same square twice and always finishes within 100 shots.
