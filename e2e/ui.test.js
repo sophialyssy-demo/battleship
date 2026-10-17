@@ -112,7 +112,7 @@ test('player can sink every enemy ship, win, and start a fresh game', async () =
 
   await page.evaluate(() => { window.__soundLog = []; });
   await page.click('#restart');
-  assert.deepEqual(await page.evaluate(() => window.__soundLog), ['saddle']);
+  assert.deepEqual(await page.evaluate(() => window.__soundLog), ['giddyup']);
   assert.equal(await shotsOnEnemy(page), 0);
   assert.equal(await page.locator('#log li').count(), 0);
   assert.equal(await page.locator('#start').isVisible(), true);
@@ -126,7 +126,7 @@ test('shots play sounds, and the mute toggle silences them and is remembered', a
   await enemyCell(page, 0, 0).click();
   await page.waitForSelector('#enemy-board.active');
   const sounds = await page.evaluate(() => window.__soundLog);
-  assert.deepEqual(sounds.slice(0, 2), ['saddle', 'shot']);
+  assert.deepEqual(sounds.slice(0, 2), ['giddyup', 'shot']);
   assert.ok(sounds.length >= 5, `expected player and AI shot sounds, got ${sounds}`);
 
   await page.click('#mute');

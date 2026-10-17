@@ -377,7 +377,7 @@ els.start.addEventListener('click', () => {
   if (state.phase !== 'placing' || state.player.ships.length !== FLEET.length) return;
   state.phase = 'playing';
   state.ai = createAI({ difficulty: els.difficulty.value });
-  play('saddle');
+  play('giddyup');
   els.placementControls.hidden = true;
   setStatus('Your shot. Fire on the rival ranch.');
   log(`Showdown started against ${opponent()}.`);
@@ -385,7 +385,7 @@ els.start.addEventListener('click', () => {
 });
 
 els.restart.addEventListener('click', () => {
-  play('saddle');
+  play('giddyup');
   newGame();
 });
 
