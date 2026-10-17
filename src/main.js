@@ -50,6 +50,14 @@ function newGame() {
   render();
 }
 
+// Runs fn after a delay, unless a new game has started in the meantime.
+function later(fn, ms) {
+  const game = state;
+  setTimeout(() => {
+    if (state === game) fn();
+  }, ms);
+}
+
 function opponent() {
   return OPPONENT[els.difficulty.value];
 }
@@ -271,7 +279,7 @@ function onEnemyBoardClick(r, c) {
   setStatus(outcome.result === 'miss' ? `${opponent()} is takin' aim...` : `Hit! ${opponent()} is takin' aim...`);
   render();
   announceHit(els.enemyBoard, r, c, outcome, 'mine');
-  setTimeout(aiTurn, AI_DELAY_MS);
+  later(aiTurn, AI_DELAY_MS);
 }
 
 function aiTurn() {
@@ -320,7 +328,7 @@ function plateLine(cls, text) {
 }
 
 function endGame(winner) {
-  setTimeout(() => play(winner === 'player' ? 'win' : 'lose'), 700);
+  later(() => play(winner === 'player' ? 'win' : 'lose'), 700);
   state.phase = 'over';
   setStatus(winner === 'player' ? 'Yee-haw! You ran the whole rival outfit out of Texas.' : `Hogtied. ${opponent()} took down your whole outfit.`);
   els.restart.hidden = false;

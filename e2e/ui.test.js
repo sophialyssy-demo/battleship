@@ -169,6 +169,7 @@ test('quitting mid-battle asks first, then starts a fresh game, even during the 
   await page.click('#quit');
   assert.equal(await page.locator('#random').isVisible(), false);
 
+  await enemyCell(page, 0, 0).click();
   page.once('dialog', (d) => d.accept());
   await page.click('#quit');
   await page.waitForTimeout(1000);
