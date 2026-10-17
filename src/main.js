@@ -68,6 +68,29 @@ function log(text, kind, by) {
   els.log.prepend(li);
 }
 
+function popup(board, r, c, text, kind) {
+  const cell = board.children[r * SIZE + c];
+  const el = document.createElement('div');
+  el.className = `pop ${kind}`;
+  el.setAttribute('aria-hidden', 'true');
+  el.textContent = text;
+  board.parentElement.appendChild(el);
+  const half = el.offsetWidth / 2;
+  const min = board.offsetLeft + half;
+  const max = board.offsetLeft + board.offsetWidth - half;
+  const x = cell.offsetLeft + cell.offsetWidth / 2;
+  el.style.left = `${Math.max(min, Math.min(max, x))}px`;
+  el.style.top = `${cell.offsetTop + cell.offsetHeight / 2}px`;
+  setTimeout(() => el.remove(), 1300);
+}
+
+function announceHit(board, r, c, outcome, side) {
+  if (outcome.result === 'miss') return;
+  const sunk = outcome.result === 'sunk';
+  popup(board, r, c, sunk ? `${outcome.ship.name} down!` : 'HIT!', sunk ? `sunk ${side}` : side);
+  flash(els.status, 'hit-flash');
+}
+
 function flash(el, cls) {
   el.classList.remove(cls);
   void el.offsetWidth;
@@ -230,10 +253,15 @@ function onEnemyBoardClick(r, c) {
   state.lastShot.player = [r, c];
   playShot(outcome, false);
   describeShot('You', r, c, outcome);
-  if (allSunk(state.enemy)) return endGame('player');
+  if (allSunk(state.enemy)) {
+    endGame('player');
+    announceHit(els.enemyBoard, r, c, outcome, 'mine');
+    return;
+  }
   state.turn = 'ai';
-  setStatus(`${opponent()} is takin' aim...`);
+  setStatus(outcome.result === 'miss' ? `${opponent()} is takin' aim...` : `Hit! ${opponent()} is takin' aim...`);
   render();
+  announceHit(els.enemyBoard, r, c, outcome, 'mine');
   setTimeout(aiTurn, AI_DELAY_MS);
 }
 
@@ -245,10 +273,15 @@ function aiTurn() {
   playShot(outcome, true);
   describeShot('Enemy', r, c, outcome);
   if (outcome.result !== 'miss') flash(els.playerPanel, 'shake');
-  if (allSunk(state.player)) return endGame('ai');
+  if (allSunk(state.player)) {
+    endGame('ai');
+    announceHit(els.playerBoard, r, c, outcome, 'theirs');
+    return;
+  }
   state.turn = 'player';
   setStatus('Your shot. Fire on the rival ranch.');
   render();
+  announceHit(els.playerBoard, r, c, outcome, 'theirs');
 }
 
 function describeShot(who, r, c, outcome) {
