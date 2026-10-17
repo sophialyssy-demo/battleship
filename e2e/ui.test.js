@@ -126,7 +126,7 @@ test('shots play sounds, and the mute toggle silences them and is remembered', a
   await enemyCell(page, 0, 0).click();
   await page.waitForSelector('#enemy-board.active');
   const sounds = await page.evaluate(() => window.__soundLog);
-  assert.deepEqual(sounds.slice(0, 2), ['start', 'shot']);
+  assert.deepEqual(sounds.slice(0, 2), ['saddle', 'shot']);
   assert.ok(sounds.length >= 5, `expected player and AI shot sounds, got ${sounds}`);
 
   await page.click('#mute');
@@ -139,6 +139,21 @@ test('shots play sounds, and the mute toggle silences them and is remembered', a
   await page.reload();
   assert.equal(await page.getAttribute('#mute', 'aria-pressed'), 'true');
   assert.deepEqual(errors, []);
+  await page.close();
+});
+
+test('the rival ranch is colored and labeled by opponent', async () => {
+  const { page } = await openGame();
+  const look = () => page.evaluate(() => ({
+    badge: document.querySelector('#foe-badge').textContent,
+    color: getComputedStyle(document.querySelector('#enemy-panel h2')).color,
+  }));
+  const outlaw = await look();
+  await page.selectOption('#difficulty', 'easy');
+  const greenhorn = await look();
+  assert.equal(outlaw.badge, 'The Outlaw');
+  assert.equal(greenhorn.badge, 'The Greenhorn');
+  assert.notEqual(outlaw.color, greenhorn.color);
   await page.close();
 });
 

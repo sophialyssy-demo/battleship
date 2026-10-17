@@ -109,31 +109,7 @@ const SOUNDS = {
   invalid(ac, t) {
     tone(ac, t, { type: 'square', from: 110, seconds: 0.15, peak: 0.15 });
   },
-  // Draw!: a horse whinny (vibrato-heavy sawtooth through a vocal-ish filter).
-  start(ac, t) {
-    const osc = ac.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(700, t);
-    osc.frequency.linearRampToValueAtTime(1250, t + 0.18);
-    osc.frequency.linearRampToValueAtTime(950, t + 0.6);
-    osc.frequency.linearRampToValueAtTime(500, t + 0.95);
-    const lfo = ac.createOscillator();
-    lfo.frequency.value = 22;
-    const depth = ac.createGain();
-    depth.gain.value = 90;
-    lfo.connect(depth).connect(osc.frequency);
-    const f = ac.createBiquadFilter();
-    f.type = 'bandpass';
-    f.frequency.value = 1400;
-    f.Q.value = 2;
-    const g = envelope(ac, t, 0.05, 0.7, 0.95);
-    osc.connect(f).connect(g).connect(master);
-    osc.start(t);
-    lfo.start(t);
-    osc.stop(t + 1.1);
-    lfo.stop(t + 1.1);
-  },
-  // Saddle up again: leather creak, a jingle of spurs, then hoofbeats trotting off.
+  // Draw! and Saddle up again: leather creak, a jingle of spurs, then hoofbeats trotting off.
   saddle(ac, t) {
     const creak = ac.createOscillator();
     creak.type = 'sawtooth';

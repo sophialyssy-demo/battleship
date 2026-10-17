@@ -20,6 +20,7 @@ const els = {
   start: $('start'),
   restart: $('restart'),
   difficulty: $('difficulty'),
+  foeBadge: $('foe-badge'),
   placementControls: $('placement-controls'),
   playerPanel: $('player-panel'),
   enemyPanel: $('enemy-panel'),
@@ -50,6 +51,12 @@ function newGame() {
 
 function opponent() {
   return OPPONENT[els.difficulty.value];
+}
+
+function renderOpponent() {
+  const outlaw = els.difficulty.value === 'hard';
+  document.body.dataset.opponent = outlaw ? 'outlaw' : 'greenhorn';
+  els.foeBadge.textContent = outlaw ? 'The Outlaw' : 'The Greenhorn';
 }
 
 function coord(r, c) {
@@ -370,7 +377,7 @@ els.start.addEventListener('click', () => {
   if (state.phase !== 'placing' || state.player.ships.length !== FLEET.length) return;
   state.phase = 'playing';
   state.ai = createAI({ difficulty: els.difficulty.value });
-  play('start');
+  play('saddle');
   els.placementControls.hidden = true;
   setStatus('Your shot. Fire on the rival ranch.');
   log(`Showdown started against ${opponent()}.`);
@@ -384,4 +391,6 @@ els.restart.addEventListener('click', () => {
 
 buildGrid(els.playerBoard, onPlayerBoardClick, onPlayerBoardHover);
 buildGrid(els.enemyBoard, onEnemyBoardClick);
+els.difficulty.addEventListener('change', renderOpponent);
+renderOpponent();
 newGame();
