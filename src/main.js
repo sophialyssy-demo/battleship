@@ -156,7 +156,7 @@ function onPlayerBoardHover(r, c) {
 }
 
 function onEnemyBoardClick(r, c) {
-  if (state.phase !== 'playing') return;
+  if (state.phase !== 'playing' || state.turn !== 'player') return;
   const outcome = receiveShot(state.enemy, r, c);
   if (outcome.result === 'repeat') {
     setStatus(`You already fired at ${coord(r, c)}. Pick another square.`);
