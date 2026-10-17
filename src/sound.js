@@ -84,13 +84,13 @@ function whinny(ac, t) {
   voice.type = 'sawtooth';
   const f = voice.frequency;
   f.setValueAtTime(420, t);
-  f.exponentialRampToValueAtTime(1150, t + 0.14);
-  f.linearRampToValueAtTime(950, t + 0.6);
-  f.linearRampToValueAtTime(700, t + 1.05);
-  f.exponentialRampToValueAtTime(320, t + 1.35);
+  f.exponentialRampToValueAtTime(1150, t + 0.1);
+  f.linearRampToValueAtTime(950, t + 0.42);
+  f.linearRampToValueAtTime(700, t + 0.72);
+  f.exponentialRampToValueAtTime(320, t + 0.92);
   const trill = ac.createOscillator();
   trill.frequency.setValueAtTime(9, t);
-  trill.frequency.linearRampToValueAtTime(15, t + 1.3);
+  trill.frequency.linearRampToValueAtTime(15, t + 0.9);
   const trillDepth = ac.createGain();
   trillDepth.gain.value = 110;
   trill.connect(trillDepth).connect(f);
@@ -102,8 +102,8 @@ function whinny(ac, t) {
   const out = ac.createGain();
   out.gain.setValueAtTime(0.0001, t);
   out.gain.exponentialRampToValueAtTime(0.9, t + 0.06);
-  out.gain.setValueAtTime(0.9, t + 0.9);
-  out.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
+  out.gain.setValueAtTime(0.9, t + 0.62);
+  out.gain.exponentialRampToValueAtTime(0.0001, t + 0.95);
   voice.connect(pulse);
   [[950, 4, 1], [1900, 5, 0.6], [3100, 6, 0.3]].forEach(([freq, q, level]) => {
     const band = ac.createBiquadFilter();
@@ -115,11 +115,11 @@ function whinny(ac, t) {
     pulse.connect(band).connect(g).connect(out);
   });
   out.connect(master);
-  noise(ac, t, { seconds: 1.3, peak: 0.06, filter: 'bandpass', freq: 2200, q: 1, attack: 0.05 });
+  noise(ac, t, { seconds: 0.9, peak: 0.06, filter: 'bandpass', freq: 2200, q: 1, attack: 0.05 });
   voice.start(t);
   trill.start(t);
-  voice.stop(t + 1.45);
-  trill.stop(t + 1.45);
+  voice.stop(t + 1);
+  trill.stop(t + 1);
 }
 
 const SOUNDS = {
@@ -157,14 +157,14 @@ const SOUNDS = {
   // Draw! and Saddle up again: a horse whinny and snort, a "giddy up" cluck and whip crack, then a gallop.
   giddyup(ac, t) {
     whinny(ac, t);
-    noise(ac, t + 1.45, { seconds: 0.3, peak: 0.35, filter: 'lowpass', freq: 700, attack: 0.02 });
-    [1.85, 1.97].forEach((d) => noise(ac, t + d, { seconds: 0.02, peak: 0.5, filter: 'bandpass', freq: 2600, q: 3, attack: 0.001 }));
-    noise(ac, t + 2.1, { seconds: 0.09, peak: 0.9, filter: 'highpass', freq: 2500, attack: 0.001 });
-    tone(ac, t + 2.1, { type: 'triangle', from: 3200, to: 700, seconds: 0.05, peak: 0.25, attack: 0.001 });
-    for (let stride = 0; stride < 5; stride++) {
+    noise(ac, t + 0.98, { seconds: 0.22, peak: 0.35, filter: 'lowpass', freq: 700, attack: 0.02 });
+    [1.2, 1.3].forEach((d) => noise(ac, t + d, { seconds: 0.02, peak: 0.5, filter: 'bandpass', freq: 2600, q: 3, attack: 0.001 }));
+    noise(ac, t + 1.42, { seconds: 0.09, peak: 0.9, filter: 'highpass', freq: 2500, attack: 0.001 });
+    tone(ac, t + 1.42, { type: 'triangle', from: 3200, to: 700, seconds: 0.05, peak: 0.25, attack: 0.001 });
+    for (let stride = 0; stride < 2; stride++) {
       [0, 0.09, 0.2].forEach((d, k) => {
-        const at = t + 2.3 + stride * 0.36 + d;
-        const v = (k === 2 ? 1 : 0.7) * (1 - stride * 0.16);
+        const at = t + 1.58 + stride * 0.3 + d;
+        const v = (k === 2 ? 1 : 0.7) * (1 - stride * 0.3);
         tone(ac, at, { from: k === 2 ? 150 : 190, to: 60, seconds: 0.08, peak: 0.6 * v, attack: 0.002 });
         noise(ac, at, { seconds: 0.04, peak: 0.25 * v, filter: 'bandpass', freq: 1200, q: 2 });
       });
