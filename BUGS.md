@@ -4,8 +4,8 @@
 
 I tested the game three ways:
 
-1. **Unit and simulation tests** (`npm test`). These cover the board rules (ship edges and overlaps, hit, miss, sunk, repeat shots, win condition). They also play 300 seeded games per AI difficulty to check that the AI never fires at the same square twice and always finishes within 100 shots.
-2. **Browser end-to-end tests** (`npm run test:e2e`). Playwright drives the real page in Chrome, on a desktop window and on a phone-sized screen.
+1. **Unit and simulation tests** (`npm test`). These cover the board rules (ship edges and overlaps, moving a placed ship, hit, miss, sunk, repeat shots, win condition). They also play 300 seeded games per AI difficulty to check that the AI never fires at the same square twice and always finishes within 100 shots.
+2. **Browser end-to-end tests** (`npm run test:e2e`). Playwright drives the real page in Chrome, on a desktop window and on a phone-sized screen, including drag-and-drop placement with a mouse and with a simulated finger.
 3. **Manual playtesting**. I placed ships by hand, rotated at the edges, clicked fast and clicked the same square twice, played full games to a win and a loss, used "Play again", and checked the layout on a 375×812 phone screen.
 
 For each bug below, I wrote a test that failed on the buggy code and passes after the fix. CI runs all of the tests before every deploy.
