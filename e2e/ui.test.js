@@ -181,6 +181,24 @@ test('quitting mid-battle asks first, then starts a fresh game, even during the 
   await page.close();
 });
 
+test('the sound and quit buttons never cover the title or status sign', async () => {
+  for (const width of [1280, 1024, 800, 701, 375]) {
+    const page = await browser.newPage({ viewport: { width, height: 800 } });
+    await page.goto(baseUrl);
+    await startWithRandomFleet(page);
+    const overlaps = await page.evaluate(() => {
+      const box = (el) => el.getBoundingClientRect();
+      const corner = box(document.querySelector('.corner'));
+      const hit = (r) => r.width > 0 && corner.left < r.right && r.left < corner.right && corner.top < r.bottom && r.top < corner.bottom;
+      const title = [...document.querySelectorAll('h1 .star')].map(box);
+      const titleBox = { left: title[0].left, right: title[1].right, top: title[0].top, bottom: title[0].bottom, width: 1 };
+      return { title: hit(titleBox), status: hit(box(document.querySelector('#status'))) };
+    });
+    assert.deepEqual(overlaps, { title: false, status: false }, `at ${width}px wide`);
+    await page.close();
+  }
+});
+
 test('on a phone-sized screen both boards and fleet lists fit without scrolling during battle', async () => {
   const context = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
   const page = await context.newPage();
