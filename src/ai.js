@@ -79,6 +79,7 @@ export function createAI({ difficulty = 'hard', rng = Math.random } = {}) {
       return move;
     },
     report([r, c], outcome) {
+      tried.add(key(r, c));
       if (outcome.result === 'hit') openHits.push([r, c]);
       if (outcome.result === 'sunk') {
         const sunk = new Set(outcome.ship.cells.map(([sr, sc]) => key(sr, sc)));
