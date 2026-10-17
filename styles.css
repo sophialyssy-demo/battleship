@@ -1,0 +1,87 @@
+:root {
+  --water: #1e4f7a;
+  --water-hover: #2b6aa0;
+  --ship: #8a96a3;
+  --hit: #d64545;
+  --miss: #cfe3f5;
+  --sunk: #5a1f1f;
+  --bg: #0d1b2a;
+  --fg: #f1f5f9;
+  --cell: min(8vw, 34px);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 1rem;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  text-align: center;
+}
+
+h1 { margin: 0.25rem 0; }
+h2 { font-size: 1rem; margin: 0.5rem 0; }
+
+#status { min-height: 1.5em; font-weight: 600; }
+
+#controls { margin: 0.5rem 0 1rem; }
+#placement-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; align-items: center; }
+
+button, select {
+  font: inherit;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #45607a;
+  background: #1b2f45;
+  color: var(--fg);
+  cursor: pointer;
+}
+button.primary { background: #2f855a; border-color: #2f855a; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+main { display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; }
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, var(--cell));
+  grid-template-rows: repeat(10, var(--cell));
+  gap: 2px;
+  background: #0a1622;
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.cell {
+  background: var(--water);
+  border: none;
+  padding: 0;
+  border-radius: 2px;
+  position: relative;
+}
+
+.cell.ship { background: var(--ship); }
+.cell.preview { background: #4fa36b; }
+.cell.preview.invalid { background: #a34f4f; }
+.cell.miss::after,
+.cell.hit::after {
+  content: '';
+  position: absolute;
+  inset: 30%;
+  border-radius: 50%;
+}
+.cell.miss::after { background: var(--miss); }
+.cell.hit { background: var(--hit); }
+.cell.hit::after { background: #fff3; }
+.cell.sunk { background: var(--sunk); }
+.cell.last { outline: 2px solid #ffd54a; outline-offset: -2px; }
+
+#enemy-board.active .cell:not(.miss):not(.hit):not(.sunk) { cursor: crosshair; }
+#enemy-board.active .cell:not(.miss):not(.hit):not(.sunk):hover { background: var(--water-hover); }
+
+.fleet { list-style: none; padding: 0; margin: 0.5rem 0; font-size: 0.85rem; }
+.fleet li.sunk { text-decoration: line-through; opacity: 0.6; }
+.fleet li.next { color: #ffd54a; font-weight: 600; }
+
+#log { max-width: 32rem; margin: 0 auto; text-align: left; max-height: 12rem; overflow-y: auto; font-size: 0.9rem; }

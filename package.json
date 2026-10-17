@@ -1,0 +1,11 @@
+{
+  "name": "battleship",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Battleship in the browser against an AI opponent",
+  "scripts": {
+    "start": "npx --yes serve -l 8080 .",
+    "test": "node --test tests/"
+  }
+}

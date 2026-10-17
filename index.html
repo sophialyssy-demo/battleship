@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Battleship vs AI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Battleship</h1>
+    <p id="status" role="status" aria-live="polite"></p>
+  </header>
+
+  <section id="controls">
+    <div id="placement-controls">
+      <button id="rotate" type="button">Rotate (R)</button>
+      <button id="random" type="button">Random placement</button>
+      <button id="clear" type="button">Clear</button>
+      <label>
+        AI difficulty
+        <select id="difficulty">
+          <option value="hard" selected>Hard</option>
+          <option value="easy">Easy</option>
+        </select>
+      </label>
+      <button id="start" type="button" class="primary" disabled>Start game</button>
+    </div>
+    <button id="restart" type="button" class="primary" hidden>Play again</button>
+  </section>
+
+  <main>
+    <div class="board-wrap">
+      <h2>Your fleet</h2>
+      <div id="player-board" class="board" aria-label="Your board"></div>
+      <ul id="player-fleet" class="fleet"></ul>
+    </div>
+    <div class="board-wrap">
+      <h2>Enemy waters</h2>
+      <div id="enemy-board" class="board" aria-label="Enemy board"></div>
+      <ul id="enemy-fleet" class="fleet"></ul>
+    </div>
+  </main>
+
+  <section>
+    <h2>Battle log</h2>
+    <ol id="log" reversed></ol>
+  </section>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
