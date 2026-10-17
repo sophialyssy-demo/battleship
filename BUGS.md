@@ -1,0 +1,25 @@
+# Bug report: what I found and how I fixed it
+
+I tested the game three ways:
+
+1. **Unit and simulation tests** (`npm test`). These cover the board rules (ship edges and overlaps, hit, miss, sunk, repeat shots, win condition). They also play 300 seeded games per AI difficulty to check that the AI never fires at the same square twice and always finishes within 100 shots.
+2. **Browser end-to-end tests** (`npm run test:e2e`). Playwright drives the real page in Chrome, on a desktop window and on a phone-sized screen.
+3. **Manual playtesting**. I placed ships by hand, rotated at the edges, clicked fast and clicked the same square twice, played full games to a win and a loss, used "Play again", and checked the layout on a 375×812 phone screen.
+
+For each bug below, I wrote a test that failed on the buggy code and passes after the fix. CI runs all of the tests before every deploy.
+
+| # | Bug | How I found it | Cause | Fix |
+|---|-----|----------------|-------|-----|
+| 1 | **Clicking fast let you fire several shots in one turn.** Three quick clicks fired 3 player shots, and then the AI took 3 turns in a row. | E2E test: 3 rapid clicks registered 3 shots instead of 1. | The click handler checked that the game was in progress but not whose turn it was. During the 0.6 s "Enemy is aiming…" delay, every click counted as a new shot and queued another AI turn. | Ignore clicks on the enemy board unless it is the player's turn. [`2995793`](https://github.com/sophialyssy-demo/battleship/commit/2995793) |
+| 2 | **Setup buttons stayed on screen during the battle.** Rotate, Random, Clear, Difficulty and Start game were still visible mid-game and after it ended, next to "Play again". | Screenshot from a manual playtest, then an E2E test. | The code set the `hidden` attribute on the controls, but my CSS gave that container `display: flex`, which overrides the browser's built-in `[hidden] { display: none }`. Reading the code showed this was more than cosmetic: clicking **Start game** mid-battle would create a new AI that had forgotten its earlier shots, and would let you switch difficulty mid-game. | Added `[hidden] { display: none !important; }`. The Start handler now only works during setup. [`e6c44ee`](https://github.com/sophialyssy-demo/battleship/commit/e6c44ee) |
+| 3 | **On phones, the two boards didn't fit on one screen.** You had to scroll down to fire, then scroll back up to see where the AI shot. | Manual playtest at 375×812. The enemy board ended at 956 px on an 812 px screen. | Cell size scaled only with screen width, and each fleet list took up five lines. | On narrow screens, cells also scale with screen height and fleet lists wrap onto one or two lines. Both boards now fit on screen. [`384c1c9`](https://github.com/sophialyssy-demo/battleship/commit/384c1c9) |
+| 4 | **Console error on every page load.** | E2E test that fails on any console error. | The browser requested `/favicon.ico`, which didn't exist (404). | Added an SVG favicon. [`444828c`](https://github.com/sophialyssy-demo/battleship/commit/444828c) |
+| 5 | **The AI only remembered shots it had picked itself.** If it was told about a shot from outside, it could fire at that square again. Normal play never does this, but the AI depended on callers always using it in one exact order. | A unit test that sets up a scenario by feeding shots to the AI failed: the AI fired at a square that had already been hit. | Squares were marked "tried" in `nextMove()` only, not when a result was reported. | `report()` now also marks the square as tried. [`914508d`](https://github.com/sophialyssy-demo/battleship/commit/914508d) |
+
+## Results after the fixes
+- 10 unit and simulation tests and 5 browser tests pass. CI runs them on every push and blocks the deploy if any fail.
+- Over 2,000 simulated games, the **Hard** AI (checkerboard search, then working along a ship after a hit) needs about **51 shots** on average to win. The **Easy** AI (random shots) needs about **95**.
+
+## Known limitations and next steps
+- When the AI sinks a ship, it is told which squares that ship covered. Real Battleship only announces which ship was sunk. This is a common shortcut. A stricter version would work out the ship's position from the ship's length.
+- Possible next features: drag-and-drop ship placement, sound and animation, and two-player online play.
