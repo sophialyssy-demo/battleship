@@ -227,7 +227,7 @@ els.clear.addEventListener('click', () => {
 });
 
 els.start.addEventListener('click', () => {
-  if (state.player.ships.length !== FLEET.length) return;
+  if (state.phase !== 'placing' || state.player.ships.length !== FLEET.length) return;
   state.phase = 'playing';
   state.ai = createAI({ difficulty: els.difficulty.value });
   els.placementControls.hidden = true;
