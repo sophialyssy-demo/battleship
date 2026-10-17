@@ -8,6 +8,7 @@
   --bg: #0d1b2a;
   --fg: #f1f5f9;
   --cell: min(8vw, 34px);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -82,8 +83,16 @@ main { display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; }
 #enemy-board.active .cell:not(.miss):not(.hit):not(.sunk) { cursor: crosshair; }
 #enemy-board.active .cell:not(.miss):not(.hit):not(.sunk):hover { background: var(--water-hover); }
 
-.fleet { list-style: none; padding: 0; margin: 0.5rem 0; font-size: 0.85rem; }
+.fleet { list-style: none; padding: 0; margin: 0.5rem 0; font-size: 0.85rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.25rem 0.75rem; max-width: calc(var(--cell) * 10 + 20px); }
 .fleet li.sunk { text-decoration: line-through; opacity: 0.6; }
 .fleet li.next { color: #ffd54a; font-weight: 600; }
 
 #log { max-width: 32rem; margin: 0 auto; text-align: left; max-height: 12rem; overflow-y: auto; font-size: 0.9rem; }
+
+@media (max-width: 700px) {
+  :root { --cell: min(8vw, 34px, 3.1vh); }
+  body { padding: 0.5rem; }
+  h1 { font-size: 1.5rem; }
+  main { gap: 0.5rem; }
+  .board-wrap { display: flex; flex-direction: column; align-items: center; }
+}
